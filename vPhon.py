@@ -20,16 +20,11 @@
 #
 ###########################################################################
 
-# for python 3-style printing:
-from __future__ import print_function
-
-import sys, codecs, re, StringIO
+import sys, codecs, re, io
 from optparse import OptionParser
 from string import punctuation
 
 def trans(word, dialect, glottal, pham, cao, palatals):
-
-    # This looks ugly, but newer versions of python complain about "from x import *" syntax
     if dialect == 'n':
         from north import onsets, nuclei, codas, tones, onglides, offglides, onoffglides, qu, gi
     elif dialect == 'c':
@@ -69,44 +64,42 @@ def trans(word, dialect, glottal, pham, cao, palatals):
             cod = codas[word[l-1]]
             cOffset = 1
                             
-
-        #if word[0:2] == u'gi' and cod and len(word) == 3:  # if you just have 'gi' and a coda...
         if word[0:2] in gi and cod and len(word) == 3:  # if you just have 'gi' and a coda...
-            nucl = u'i'
-            ons = u'z'
+            nucl = 'i'
+            ons = 'z'
         else:
             nucl = word[oOffset:l-cOffset]
 
         if nucl in nuclei:
             if oOffset == 0:
                 if glottal == 1:
-                    if word[0] not in onsets:   # if there isn't an onset....  
-                        ons = u'ʔ'+nuclei[nucl] # add a glottal stop
-                    else:                       # otherwise...
-                        nuc = nuclei[nucl]      # there's your nucleus 
+                    if word[0] not in onsets:    # if there isn't an onset....  
+                        ons = 'ʔ' + nuclei[nucl] # add a glottal stop
+                    else:                        # otherwise...
+                        nuc = nuclei[nucl]       # there's your nucleus 
                 else: 
-                    nuc = nuclei[nucl]          # there's your nucleus 
-            else:                               # otherwise...
-                nuc = nuclei[nucl]              # there's your nucleus
+                    nuc = nuclei[nucl]           # there's your nucleus 
+            else:                                # otherwise...
+                nuc = nuclei[nucl]               # there's your nucleus
         
-        elif nucl in onglides and ons != u'kw': # if there is an onglide...
-            nuc = onglides[nucl]                # modify the nuc accordingly
-            if ons:                             # if there is an onset...
-                ons = ons+u'w'                  # labialize it, but...
-            else:                               # if there is no onset...
-                ons = u'w'                      # add a labiovelar onset 
+        elif nucl in onglides and ons != 'kw':   # if there is an onglide...
+            nuc = onglides[nucl]                 # modify the nuc accordingly
+            if ons:                              # if there is an onset...
+                ons = ons+'w'                    # labialize it, but...
+            else:                                # if there is no onset...
+                ons = 'w'                        # add a labiovelar onset 
 
-        elif nucl in onglides and ons == u'kw': 
+        elif nucl in onglides and ons == 'kw': 
             nuc = onglides[nucl]
                 
         elif nucl in onoffglides:
             cod = onoffglides[nucl][-1]
             nuc = onoffglides[nucl][0:-1]
-            if ons != u'kw':
+            if ons != 'kw':
                 if ons:
-                    ons = ons+u'w'
+                    ons = ons+'w'
                 else:
-                    ons = u'w'
+                    ons = 'w'
         elif nucl in offglides:
             cod = offglides[nucl][-1]
             nuc = offglides[nucl][:-1]
@@ -126,76 +119,76 @@ def trans(word, dialect, glottal, pham, cao, palatals):
 
         # Velar Fronting (Northern dialect)
         if dialect == 'n':
-            if nuc == u'a':
-                if cod == u'k' and cOffset == 2: nuc = u'ɛ'
-                if cod == u'ɲ' and nuc == u'a': nuc = u'ɛ'
+            if nuc == 'a':
+                if cod == 'k' and cOffset == 2: nuc = 'ɛ'
+                if cod == 'ɲ' and nuc == 'a': nuc = 'ɛ'
 
             # Final palatals (Northern dialect)
-            if nuc not in [u'i', u'e', u'ɛ']:
-                if cod == u'ɲ': cod = u'ŋ'
-            elif palatals != 1 and nuc in [u'i', u'e', u'ɛ']:
-                if cod == u'ɲ': cod = u'ŋ'
+            if nuc not in ['i', 'e', 'ɛ']:
+                if cod == 'ɲ': cod = 'ŋ'
+            elif palatals != 1 and nuc in ['i', 'e', 'ɛ']:
+                if cod == 'ɲ': cod = 'ŋ'
             if palatals == 1:
-                if cod == u'k' and nuc in [u'i', u'e', u'ɛ']: cod = u'c'
+                if cod == 'k' and nuc in ['i', 'e', 'ɛ']: cod = 'c'
 
         # Velar Fronting (Southern and Central dialects)
         else:
-            if nuc in [u'i', u'e']:
-                if cod == u'k': cod = u't'
-                if cod == u'ŋ': cod = u'n'
+            if nuc in ['i', 'e']:
+                if cod == 'k': cod = 't'
+                if cod == 'ŋ': cod = 'n'
 
             # There is also this reverse fronting, see Thompson 1965:94 ff.
-            elif nuc in [u'iə', u'ɯə', u'uə', u'u', u'ɯ', u'ɤ', u'o', u'ɔ', u'ă', u'ɤ̆']:
-                if cod == u't': 
-                    cod = u'k'
-                if cod == u'n': cod = u'ŋ'
+            elif nuc in ['iə', 'ɯə', 'uə', 'u', 'ɯ', 'ɤ', 'o', 'ɔ', 'ă', 'ɤ̆']:
+                if cod == 't': 
+                    cod = 'k'
+                if cod == 'n': cod = 'ŋ'
 
         # Monophthongization (Southern dialects: Thompson 1965: 86; Hoàng 1985: 181)
         if dialect == 's':
-            if cod in [u'm', u'p']:
-                if nuc == u'iə': nuc = u'i'
-                if nuc == u'uə': nuc = u'u'
-                if nuc == u'ɯə': nuc = u'ɯ'
+            if cod in ['m', 'p']:
+                if nuc == 'iə': nuc = 'i'
+                if nuc == 'uə': nuc = 'u'
+                if nuc == 'ɯə': nuc = 'ɯ'
 
         # Tones 
         # Modified 20 Sep 2008 to fix aberrant 33 error
-        tonelist = [tones[word[i]] for i in xrange(0,l) if word[i] in tones]
+        tonelist = [tones[word[i]] for i in range(0,l) if word[i] in tones]
         if tonelist:
-            ton = unicode(tonelist[len(tonelist)-1])
+            ton = str(tonelist[len(tonelist)-1])
         else:
             if not (pham or cao):
                 if dialect == 'c':
-                    ton = unicode('35')
+                    ton = str('35')
                 else:
-                    ton = unicode('33')
+                    ton = str('33')
             else:
-                ton = unicode('1')
+                ton = str('1')
             
         # Modifications for closed syllables
         if cOffset !=0:
 
             # Obstruent-final nang tones are modal voice
-            if (dialect == 'n' or dialect == 's') and ton == u'21g' and cod in ['p', 't', 'k']:
+            if (dialect == 'n' or dialect == 's') and ton == '21g' and cod in ['p', 't', 'k']:
                 #if ton == u'21\u02C0' and cod in ['p', 't', 'k']: # fixed 8 Nov 2016
-                ton = u'21'
+                ton = '21'
 
             # Modification for sắc in closed syllables (Northern and Central only)
-            if ((dialect == 'n' and ton == u'24') or (dialect == 'c' and ton == u'13')) and cod in ['p', 't', 'k']:
-                ton = u'45'
+            if ((dialect == 'n' and ton == '24') or (dialect == 'c' and ton == '13')) and cod in ['p', 't', 'k']:
+                ton = '45'
 
             # Modification for 8-tone system
             if cao == 1:
-                if ton == u'5' and cod in ['p', 't', 'k']:
-                    ton = u'5b'
-                if ton == u'6' and cod in ['p', 't', 'k']:
-                    ton = u'6b'
+                if ton == '5' and cod in ['p', 't', 'k']:
+                    ton = '5b'
+                if ton == '6' and cod in ['p', 't', 'k']:
+                    ton = '6b'
 
             # labialized allophony (added 17.09.08)
-            if nuc in [u'u', u'o', u'ɔ']:
-                if cod == u'ŋ':
-                    cod = u'ŋ͡m' 
-                if cod == u'k':
-                    cod = u'k͡p'
+            if nuc in ['u', 'o', 'ɔ']:
+                if cod == 'ŋ':
+                    cod = 'ŋ͡m' 
+                if cod == 'k':
+                    cod = 'k͡p'
 
         return (ons, nuc, cod, ton)
     
@@ -211,10 +204,10 @@ def convert(word, dialect, glottal, pham, cao, palatals, delimit):
     try:
         (ons, nuc, cod, ton) = trans(word, dialect, glottal, pham, cao, palatals)
         if None in (ons, nuc, cod, ton):
-            seq = u'['+word+u']'
+            seq = '[' + word + ']'
         else:
-            seq = delimit+delimit.join(filter(None, (ons, nuc, cod, ton)))+delimit
-    except (TypeError), e:
+            seq = delimit + delimit.join([_f for _f in (ons, nuc, cod, ton) if _f]) + delimit
+    except (TypeError) as e:
         pass
 
     return seq
@@ -265,24 +258,23 @@ def main():
     if dialect not in ['n', 'c', 's']:
         parser.error('Please enter a valid dialect.')
 
-
     # read from stdin
-    fh = StringIO.StringIO(unicode(sys.stdin.read(), 'utf-8'))
+    fh = io.TextIOWrapper(sys.stdin.buffer, encoding='utf8')
 
     # parse the input
     for line in fh:
         if line =='\n':
             pass
         else:
-            compound = u''
-            ortho = u'' 
+            compound = ''
+            ortho = '' 
             words = line.split()
             ## toss len==0 junk
             words = [word for word in words if len(word)>0]
             ## hack to get rid of single hyphens or underscores
-            words = [word for word in words if word!=u'-']
-            words = [word for word in words if word!=u'_']
-            for i in xrange(0,len(words)):
+            words = [word for word in words if word!='-']
+            words = [word for word in words if word!='_']
+            for i in range(0,len(words)):
                 word = words[i].strip()
                 ortho += word
                 word = word.strip(punctuation).lower()
@@ -294,24 +286,24 @@ def main():
                     values = substrings[::2]
                     delimiters = substrings[1::2] + ['']
                     ipa = [convert(x, dialect, glottal, pham, cao, palatals, delimit).strip() for x in values]
-                    seq = ''.join(v+d for v,d in zip(ipa, delimiters))
+                    seq = ''.join(v + d for v, d in zip(ipa, delimiters))
                 else:
                     seq = convert(word, dialect, glottal, pham, cao, palatals, delimit).strip()
                 # concatenate
                 if len(words) >= 2:
                     ortho += ' '
-                if i < len(words)-1:
-                    seq = seq+u' '
+                if i < len(words) - 1:
+                    seq = seq + ' '
                 compound = compound + seq
             
             ## entire line has been parsed
-            if ortho == u'':
+            if ortho == '':
                 pass
             else:
                 ortho = ortho.strip()
                 ## print orthography?
                 if output_ortho: print(ortho.encode('utf-8'), end=','),
-                print(compound.encode('utf-8'))
+                print(compound)
 
     # If we have an open filehandle, close it
     try:     

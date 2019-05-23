@@ -5,6 +5,7 @@ Package: vPhon version 0.2.6
 Author: James Kirby <j.kirby@ed.ac.uk>
 
 Web: https://github.com/kirbyj/vPhon
+(https://github.com/mmcauliffe/vPhon is an interesting fork)
 
 This software takes UTF-8 Vietnamese orthography and returns broad transcription UTF-8 output in the International Phonetic Association (IPA) alphabet for three major dialects of Vietnamese: Northern (Hà Nội), Central (Huế), and Southern (Sài Gòn) speech.
 
@@ -66,8 +67,7 @@ tones are both phonetized as 4 when vPhon is passed the `-6` or `-8` flags, repr
 
 ## Installation
 
-No installation is required. You must have a working version of Python (>= 2.4) installed and in your path. vPhon requires
-the `__future__`, `string`, `StringIO`, and `optparse` modules, all of which should come standard with Python >= 2.4.x.
+No installation is required. This fork is updated for Python 3. The original is for Python ≥2.4
 
 ## Usage
 
