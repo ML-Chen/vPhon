@@ -38,7 +38,7 @@ As of version 0.2.2, final labialized allophones of /ŋ k/ are represented as [�
 
 ###Tones
 
-vPhon represents tone using one of two methods. By default, vPhon will return Chao tone numbers based on Alves (2007a), Hoàng (1989), Nguyễn and Edmonson (1997), and Vũ (1982).
+vPhon represents tone using one of four methods. By default, vPhon will return Chao tone numbers based on Alves (2007a), Hoàng (1989), Nguyễn and Edmonson (1997), and Vũ (1982).
 
 Name | North | Central | South
 ---- | ----- | ------- | -----
@@ -62,12 +62,14 @@ vPhon also provides an option (given the `-6` flag) to return integer values for
 
 If passed the `-8` flag, *sắc* and *nặng* tones in closed syllables are returned as 5b and 6b, respectively (Cao 1998; Michaud 2004; Phạm 2001).
 
+If passed the `-tl` flag and not the `-6` or `-8` flags, the tones will be returned as Chao tone letters instead of Chao tone numbers.
+
 Note that for the Central and Southern dialects, the relationship of tone to number is slightly different. Orthographic *hỏi* and *ngã*
 tones are both phonetized as 4 when vPhon is passed the `-6` or `-8` flags, representing the (phonological) mergers present in those dialects (Hoàng 1989: 212 *ff.*)
 
 ## Installation
 
-No installation is required. This fork is updated for Python 3. The original is for Python ≥2.4
+No installation is required. This fork is updated for Python ≥3.5. The original is for Python ≥2.4
 
 ## Usage
 

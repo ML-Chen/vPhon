@@ -23,7 +23,7 @@ from argparse import ArgumentParser
 from string import punctuation
 from typing import Tuple
 
-def trans(word: str, dialect: str, glottal: bool, pham: bool, cao: bool, palatals: bool) -> Tuple[str, str, str, str]:
+def trans(word: str, dialect: str, glottal: bool, pham: bool, cao: bool, palatals: bool, tone_letters: bool) -> Tuple[str, str, str, str]:
     """
     Convert a word to a tuple of the onset, nucleus, coda, and tone.
     """
@@ -80,7 +80,7 @@ def trans(word: str, dialect: str, glottal: bool, pham: bool, cao: bool, palatal
 
         if nucl in nuclei:
             if oOffset == 0:
-                if glottal == 1:
+                if glottal:
                     if word[0] not in onsets:    # if there isn't an onset....  
                         ons = 'ʔ' + nuclei[nucl] # add a glottal stop
                     else:                        # otherwise...
@@ -134,9 +134,9 @@ def trans(word: str, dialect: str, glottal: bool, pham: bool, cao: bool, palatal
             # Final palatals (Northern dialect)
             if nuc not in ['i', 'e', 'ɛ']:
                 if cod == 'ɲ': cod = 'ŋ'
-            elif palatals != 1 and nuc in ['i', 'e', 'ɛ']:
+            elif not palatals and nuc in ['i', 'e', 'ɛ']:
                 if cod == 'ɲ': cod = 'ŋ'
-            if palatals == 1:
+            if palatals:
                 if cod == 'k' and nuc in ['i', 'e', 'ɛ']: cod = 'c'
 
         # Velar Fronting (Southern and Central dialects)
@@ -197,9 +197,12 @@ def trans(word: str, dialect: str, glottal: bool, pham: bool, cao: bool, palatal
                 if cod == 'k':
                     cod = 'k͡p'
 
+        if tone_letters and not pham and not cao:
+            ton = ton.replace('1', '˩').replace('2', '˨').replace('3', '˧').replace('4', '˦').replace('5', '˥')
+
         return (ons, nuc, cod, ton)
     
-def convert(word: str, dialect: str, glottal: bool, pham: bool, cao: bool, palatals: bool, delimit: str) -> str:
+def convert(word: str, dialect: str, glottal: bool, pham: bool, cao: bool, palatals: bool, delimit: str, tone_letters: bool) -> str:
     """Convert a single orthographic string to IPA."""
 
     ons = ''
@@ -209,7 +212,7 @@ def convert(word: str, dialect: str, glottal: bool, pham: bool, cao: bool, palat
     seq = ''
 
     try:
-        (ons, nuc, cod, ton) = trans(word, dialect, glottal, pham, cao, palatals)
+        (ons, nuc, cod, ton) = trans(word, dialect, glottal, pham, cao, palatals, tone_letters)
         if None in (ons, nuc, cod, ton):
             seq = '[' + word + ']'
         else:
@@ -231,9 +234,10 @@ def main():
     parser.add_argument('-8', '--cao', action='store_true', help='phonetize tones as 1-4 + 5, 5b, 6, 6b')
     parser.add_argument('-p', '--palatals', action='store_true', help='use word-final palatal velars in Northern dialects')
     parser.add_argument('-t', '--tokenize', action='store_true', help='preserve underscores or hyphens in tokenized inputs (e.g., anh_ta = anh1_ta1)')
-    parser.add_argument('-o', '--ortho', action='store_true', help='output orthography as well as IPA')
+    parser.add_argument('-o', '--output_ortho', action='store_true', help='output orthography as well as IPA')
     parser.add_argument('-m', '--delimit', action='store', type=str, help='produce explicitly delimited output (e.g., bi ca = .b.i.33. .k.a.33.')
-    parser.add_argument('-d', action='store', type=str, dest='dialect', help='specify dialect region ([N]orthern, [C]entral, [S]outhern)')
+    parser.add_argument('-d', '--dialect', action='store', type=str, help='specify dialect region ([N]orthern, [C]entral, [S]outhern)')
+    parser.add_argument('-tl', '--tone_letters', action='store_true', help='use Chao tone letters instead of tone numerals, if --pham and --cao are not passed in')
     args = parser.parse_args()
 
     if not args.dialect:
@@ -257,9 +261,9 @@ def main():
             ## toss len==0 junk
             words = [word for word in words if len(word)>0]
             ## hack to get rid of single hyphens or underscores
-            words = [word for word in words if word!='-']
-            words = [word for word in words if word!='_']
-            for i in range(0,len(words)):
+            words = [word for word in words if word != '-']
+            words = [word for word in words if word != '_']
+            for i in range(0, len(words)):
                 word = words[i].strip()
                 ortho += word
                 word = word.strip(punctuation).lower()
@@ -270,10 +274,10 @@ def main():
                     substrings = re.split(r'(_|-)', word)
                     values = substrings[::2]
                     delimiters = substrings[1::2] + ['']
-                    ipa = [convert(x, args.dialect, args.glottal, args.pham, args.cao, args.palatals, args.delimit).strip() for x in values]
+                    ipa = [convert(x, args.dialect, args.glottal, args.pham, args.cao, args.palatals, args.delimit, args.tone_letters).strip() for x in values]
                     seq = ''.join(v + d for v, d in zip(ipa, delimiters))
                 else:
-                    seq = convert(word, args.dialect, args.glottal, args.pham, args.cao, args.palatals, args.delimit).strip()
+                    seq = convert(word, args.dialect, args.glottal, args.pham, args.cao, args.palatals, args.delimit, args.tone_letters).strip()
                 # concatenate
                 if len(words) >= 2:
                     ortho += ' '
@@ -287,7 +291,7 @@ def main():
             else:
                 ortho = ortho.strip()
                 ## print orthography?
-                if args.ortho: print(ortho.encode('utf-8'), end=','),
+                if args.output_ortho: print(ortho, end=','),
                 print(compound)
 
     # If we have an open filehandle, close it
