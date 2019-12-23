@@ -169,7 +169,6 @@ def trans(word, dialect, glottal, pham, cao, palatals):
 
             # Obstruent-final nang tones are modal voice
             if (dialect == 'n' or dialect == 's') and ton == '21g' and cod in ['p', 't', 'k']:
-                #if ton == u'21\u02C0' and cod in ['p', 't', 'k']: # fixed 8 Nov 2016
                 ton = '21'
 
             # Modification for sắc in closed syllables (Northern and Central only)
