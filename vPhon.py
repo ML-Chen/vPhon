@@ -1,6 +1,6 @@
 ﻿###########################################################################
-#       vPhon.py version 0.2.6
-#       Copyright 2008-2016 James Kirby <j.kirby@ed.ac.uk>
+#       vPhon.py version 0.2.6m
+#       Copyright 2008-2019 James Kirby <j.kirby@ed.ac.uk>, Michael Chen
 # 
 #
 #       vPhon is free software: you can redistribute it and/or modify      
@@ -235,7 +235,7 @@ def main():
     parser.add_argument('-p', '--palatals', action='store_true', help='use word-final palatal velars in Northern dialects')
     parser.add_argument('-t', '--tokenize', action='store_true', help='preserve underscores or hyphens in tokenized inputs (e.g., anh_ta = anh1_ta1)')
     parser.add_argument('-o', '--output_ortho', action='store_true', help='output orthography as well as IPA')
-    parser.add_argument('-m', '--delimit', action='store', type=str, help='produce explicitly delimited output (e.g., bi ca = .b.i.33. .k.a.33.')
+    parser.add_argument('-m', '--delimit', action='store', type=str, help='produce explicitly delimited output (e.g., bi ca = .b.i.33. .k.a.33.)')
     parser.add_argument('-d', '--dialect', action='store', type=str, help='specify dialect region ([N]orthern, [C]entral, [S]outhern)')
     parser.add_argument('-tl', '--tone_letters', action='store_true', help='use Chao tone letters instead of tone numerals, if --pham and --cao are not passed in')
     args = parser.parse_args()
@@ -258,11 +258,7 @@ def main():
             compound = ''
             ortho = '' 
             words = line.split()
-            ## toss len==0 junk
-            words = [word for word in words if len(word)>0]
-            ## hack to get rid of single hyphens or underscores
-            words = [word for word in words if word != '-']
-            words = [word for word in words if word != '_']
+            words = [word for word in words if len(word) > 0 and word != '-' and word != '_']
             for i in range(0, len(words)):
                 word = words[i].strip()
                 ortho += word

@@ -1,11 +1,10 @@
 # vPhon: a Vietnamese phonetizer
 
-Package: vPhon version 0.2.6
+Package: vPhon version 0.2.6m
 
-Author: James Kirby <j.kirby@ed.ac.uk>
+Author: James Kirby <j.kirby@ed.ac.uk>, Michael Chen
 
-Web: https://github.com/kirbyj/vPhon
-(https://github.com/mmcauliffe/vPhon is an interesting fork)
+Web: https://github.com/ML-Chen/vPhon (original: https://github.com/kirbyj/vPhon. https://github.com/mmcauliffe/vPhon is a cool fork.)
 
 This software takes UTF-8 Vietnamese orthography and returns broad transcription UTF-8 output in the International Phonetic Association (IPA) alphabet for three major dialects of Vietnamese: Northern (Hà Nội), Central (Huế), and Southern (Sài Gòn) speech.
 
@@ -67,11 +66,11 @@ If passed the `-tl` flag and not the `-6` or `-8` flags, the tones will be retur
 Note that for the Central and Southern dialects, the relationship of tone to number is slightly different. Orthographic *hỏi* and *ngã*
 tones are both phonetized as 4 when vPhon is passed the `-6` or `-8` flags, representing the (phonological) mergers present in those dialects (Hoàng 1989: 212 *ff.*)
 
-## Installation
-
-No installation is required. This fork is updated for Python ≥3.5. The original is for Python ≥2.4
-
 ## Usage
+
+This fork is for Python ≥3.6. The original is for Python 2.4–2.7.
+
+### Command Line
 
 vPhon takes an obligatory `-d, --dialect` option, specifying the dialect correspondence set to be used for phonetization
 ([N]orthern, [C]entral, or [S]outhern). The correspondence files may be found in the `Rules/` directory, and modified as necessary.
@@ -115,17 +114,29 @@ căw24 oŋ͡m33_ta3 kuŋ͡m35g viən33 cɯə33 biət45
 
 The `--delimit` flag will produce produce output where each phonetic symbol is separated by user-specified delimiter. If you use this flag, you must also specify a delimiter.
 
+### Web app
+
 ## Notes
 
 All non-alphanumeric characters in the input are stripped prior to processing (unless the `--tokenize` option is selected, in which case `-` and `_` will be retained in the output). 
 
-Any input containing non-Vietnamese orthography, or series of characters not conforming to Vietnamese phonotactics, will be braced in the output, e.g.
+Any input containing non-Vietnamese orthography, or series of characters not conforming to Vietnamese phonotactics, will be braced in the output and possibly also lowercased, e.g.
 
 ```
 [These] [are] [not] [licit] [words] [20mi] [10-15km] [etc]
 ```
 
 Try running the examples in the `test/` directory to get a better idea of this behavior.
+
+### Web App
+
+Run the following in the command line:
+
+```sh
+cd server
+pip install -r requirements.txt
+python app.py
+```
 
 ## Citation
 
